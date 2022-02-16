@@ -1,0 +1,34 @@
+@page "/"
+@inject IWebHostEnvironment _webHostEnvironment
+@using System.IO
+@using Microsoft.AspNetCore.Hosting
+
+<h3>Upload</h3>
+<p>A simple example with a model, which can upload images</p>
+<label>
+    Load Images:
+    <InputFile OnChange="@UploadImages" multiple accept=".jpg,.jpeg,.png"/>
+</label>
+
+@code {
+    private async Task UploadImages(InputFileChangeEventArgs args)
+    {
+        try
+        {
+            var currentTime = DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
+            var path = Path.Combine(_webHostEnvironment.WebRootPath, $@"UserData/dummy/UploadTest/{currentTime}");
+            Directory.CreateDirectory(path);
+            var files = args.GetMultipleFiles();
+            foreach (var file in files)
+            {
+                var filePath = Path.Combine(path, file.Name);
+                await using FileStream fs = new(filePath, FileMode.Create);
+                await file.OpenReadStream().CopyToAsync(fs);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+}
